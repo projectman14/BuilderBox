@@ -1,23 +1,43 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
 import { Spotlight } from "@/components/ui/Spotlight";
 import { TextGenerateEffect } from "@/components/ui/TextGenerateEffect";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
-import Link from "next/link";
-import Image from 'next/image';
-import { GlareCardDemo } from '@/components/PopupCard';
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
+import { useContract } from "../../context/ContractsContext"; // Adjust the path as needed
+import { ethers } from 'ethers'; // Import ethers
 
 const Page = () => {
+    const router = useRouter();
+    const { contractDeal } = useContract();
+    const [cardData, setCardData] = useState([]);
 
-    const router = useRouter()
+    useEffect(() => {
+        const fetchDealData = async () => {
+            try {
+                const dealCount = await contractDeal.dealCount();
+                const dealPromises = [];
+                for (let i = 0; i < dealCount; i++) {
+                    dealPromises.push(contractDeal.getDealDetails(i));
+                }
 
-    const [cardData, setCardData] = useState([
-        { projectName: 'Stark Tower', Description: 'Hover over this card to unleash the power of CSS perspective', budget: 500 },
-        { projectName: 'Tony Tower', Description: 'Hover over this card to unleash the power of CSS perspective', budget: 500 },
-        { projectName: 'Honey Tower', Description: 'Hover over this card to unleash the power of CSS perspective', budget: 500 }
-    ]);
+                const deals = await Promise.all(dealPromises);
+
+                const formattedDeals = deals.map(deal => ({
+                    projectName: deal[2],
+                    Description: `Budget: ${ethers.utils.formatEther(deal[3])} ETH - Closing Date: ${new Date(deal[10] * 1000).toLocaleDateString()}`,
+                    status: "Applied" // Default status
+                }));
+
+                setCardData(formattedDeals);
+            } catch (error) {
+                console.error("Error fetching deal data:", error);
+            }
+        };
+
+        fetchDealData();
+    }, [contractDeal]);
 
     return (
         <div className="relative overflow-hidden h-[100vh]">
@@ -34,18 +54,11 @@ const Page = () => {
                     <Spotlight className="left-80 top-28 h-[80vh] w-[50vw]" fill="blue" />
                 </div>
 
-                <div
-                    className="h-screen w-full dark:bg-black-100 bg-white dark:bg-grid-white/[0.03] bg-grid-black-100/[0.2]
-                    absolute top-0 left-0 flex items-center justify-center"
-                >
-                    <div
-                        className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black-100
-                        bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"
-                    />
+                <div className="h-screen w-full dark:bg-black-100 bg-white dark:bg-grid-white/[0.03] bg-grid-black-100/[0.2] absolute top-0 left-0 flex items-center justify-center">
+                    <div className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black-100 bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"/>
                 </div>
 
                 <div className="flex flex-col justify-center items-center relative -mt-16 z-10">
-
                     <p className="uppercase tracking-widest text-xs text-center text-blue-100 max-w-80 cursor-pointer" onClick={() => router.push('/')}>
                         BuilderBox Home
                     </p>
@@ -79,7 +92,7 @@ const Page = () => {
                                         target="__blank"
                                         className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white cursor-pointer"
                                     >
-                                        Deal Amount : {card.budget}
+                                        Status: {card.status}
                                     </CardItem>
                                 </div>
                             </CardBody>
@@ -87,7 +100,6 @@ const Page = () => {
                     ))}
                 </div>
             </div>
-
         </div>
     );
 }
