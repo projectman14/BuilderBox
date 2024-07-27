@@ -1,38 +1,69 @@
-"use client"
+'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
 import { Spotlight } from "@/components/ui/Spotlight";
 import { TextGenerateEffect } from "@/components/ui/TextGenerateEffect";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
-import Link from "next/link";
-import Image from 'next/image';
 import { GlareCardDemo } from '@/components/PopupCard';
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation';
+import { useContract } from "../../context/ContractsContext"; // Adjust the path as needed
 
 const Page = () => {
-
-    const router = useRouter()
-
-    const [cardData, setCardData] = useState([
-        { projectName: 'Stark Tower', Description: 'Hover over this card to unleash the power of CSS perspective' },
-        { projectName: 'Tony Tower', Description: 'Hover over this card to unleash the power of CSS perspective' },
-        { projectName: 'Honey Tower', Description: 'Hover over this card to unleash the power of CSS perspective' }
-    ]);
-
-    const [submitCardData, setSubmitCardData] = useState({
+    const router = useRouter();
+    const { contractDeal } = useContract();
+    
+    const [cardData, setCardData] = useState<any[]>([]);
+    const [submitCardData, setSubmitCardData] = useState<{
+        projectName: string;
+        description: string;
+        dealId: number;
+    }>({
         projectName: '',
-        Description: ''
+        description: '',
+        dealId: 0
     });
-
     const [isApplying, setIsApplying] = useState(false);
 
-    const applyBid = (id: any) => () => {
+    useEffect(() => {
+        const fetchDeals = async () => {
+            if (contractDeal) {
+                try {
+                    const dealCount = await contractDeal.dealCount();
+                    const deals = [];
+                    const now = Math.floor(Date.now() / 1000); // Current time in seconds
+
+                    for (let i = 0; i < dealCount.toNumber(); i++) {
+                        const deal = await contractDeal.getDealDetails(i);
+                        const closingTime = deal.dealClosingTime.toNumber();
+                        
+                        if (closingTime > now) { // Filter out deals where closing time is over
+                            deals.push({
+                                dealId: i,
+                                projectName: deal.dealName,
+                                description: `Budget: ${ethers.utils.formatEther(deal.amount)} ETH, Closing Date: ${new Date(closingTime * 1000).toLocaleString()}`
+                            });
+                        }
+                    }
+
+                    setCardData(deals);
+                } catch (error) {
+                    console.error("Error fetching deals:", error);
+                }
+            }
+        };
+
+        fetchDeals();
+    }, [contractDeal]);
+
+    const applyBid = (id: number) => () => {
         setSubmitCardData({
             projectName: cardData[id].projectName,
-            Description: cardData[id].Description
+            description: cardData[id].description,
+            dealId: cardData[id].dealId
         });
         setIsApplying(true);
-    }
+    };
 
     return (
         <div className="relative overflow-hidden h-[100vh]">
@@ -60,7 +91,6 @@ const Page = () => {
                 </div>
 
                 <div className="flex flex-col justify-center items-center relative -mt-16 z-10">
-
                     <p className="uppercase tracking-widest text-xs text-center text-blue-100 max-w-80 cursor-pointer" onClick={() => router.push('/')}>
                         BuilderBox Home
                     </p>
@@ -85,7 +115,7 @@ const Page = () => {
                                     translateZ="60"
                                     className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300"
                                 >
-                                    {card.Description}
+                                    {card.description}
                                 </CardItem>
                                 <div className="flex justify-center items-center mt-20">
                                     <CardItem
@@ -105,10 +135,15 @@ const Page = () => {
             </div>
 
             <div className={`absolute top-[10rem] left-[38rem] ${isApplying ? 'flex' : 'hidden'}`}>
-                <GlareCardDemo projectname={submitCardData.projectName} description={submitCardData.Description} onClose={() => setIsApplying(false)} />
+                <GlareCardDemo 
+                    projectname={submitCardData.projectName} 
+                    description={submitCardData.description} 
+                    dealId={submitCardData.dealId} 
+                    onClose={() => setIsApplying(false)} 
+                />
             </div>
         </div>
     );
-}
+};
 
 export default Page;

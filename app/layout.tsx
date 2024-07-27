@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-
+import { ContractProvider } from '../context/ContractsContext';
 import "./globals.css";
 import { ThemeProvider } from "./provider";
+import Register from "../app/register/page";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "BuilderBox",
-  description: "Morden Client Taker for builders",
+  description: "Modern Client Taker for builders",
 };
 
 export default function RootLayout({
@@ -28,7 +29,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <ContractProvider>
+            {children}
+          </ContractProvider>
         </ThemeProvider>
       </body>
     </html>

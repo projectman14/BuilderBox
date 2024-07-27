@@ -4,7 +4,9 @@ import MagicButton from "./MagicButton";
 import { Spotlight } from "./ui/Spotlight";
 import { TextGenerateEffect } from "./ui/TextGenerateEffect";
 import { ethers } from 'ethers';
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useContract } from '../context/ContractsContext';
+
 
 declare global {
   interface Window {
@@ -17,7 +19,7 @@ declare global {
 }
 
 const Hero = () => {
-
+  const { provider, signer, contractContractor, contractDealer, contractVerifiedContractor, contractDealFinal, contractDeal } = useContract();
   const [account, setAccount] = useState<string | null>(null);
 
   const connectWallet = async () => {
@@ -43,6 +45,46 @@ const Hero = () => {
       console.error('MetaMask is not installed');
     }
   };
+
+  useEffect(() => {
+
+
+    const finalizeDeal = async () => {
+      try {
+        //@ts-ignore
+        const dealCount = await contractDeal.dealCount();
+        console.log(dealCount.toNumber())
+        const overdue: number[] = [];
+
+        for (let i = 0; i < dealCount; i++) {
+          //@ts-ignore
+          const { dealClosingTime } = await contractDeal.getDealDetails(i);
+          const time = dealClosingTime.toNumber();
+          // console.log(time)
+          // const dealData = await contractDeal.getDealDetails(i);
+          if (time < Math.floor(Date.now() / 1000)) {
+            overdue.push(i);
+          }
+
+          // console.log('Overdue deals:', dealData);
+
+          for (let i = 0; i < overdue.length; i++) {
+            //@ts-ignore
+            const tx = await contractDealFinal.doingDeal(i);
+            await tx.wait();
+          }
+        }
+
+        console.log('Overdue deals:', overdue);
+
+
+      } catch (error) {
+        console.error('Error finalizing deals:', error);
+      }
+    };
+
+    finalizeDeal();
+  }, [contractDeal]);
 
 
   return (
