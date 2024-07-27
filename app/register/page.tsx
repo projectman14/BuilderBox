@@ -311,7 +311,7 @@ const Page = () => {
                                 </LabelInputContainer>
                                 <LabelInputContainer className="mb-4">
                                     <Label htmlFor="registration_type">Registration Type</Label>
-                                    <select id="registration_type" name="registration_type" value={data.registration_type} onChange={handleOnChange}>
+                                    <select className="bg-black-100" id="registration_type" name="registration_type" value={data.registration_type} onChange={handleOnChange}>
                                         <option value="contractor">Contractor</option>
                                         <option value="dealer">Dealer</option>
                                     </select>
