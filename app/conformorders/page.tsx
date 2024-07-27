@@ -16,9 +16,11 @@ const Page = () => {
     useEffect(() => {
         const fetchDealData = async () => {
             try {
+                //@ts-ignore
                 const dealCount = await contractDeal.dealCount();
                 const dealPromises = [];
                 for (let i = 0; i < dealCount; i++) {
+                    //@ts-ignore
                     dealPromises.push(contractDeal.getDealDetails(i));
                 }
 
@@ -29,7 +31,7 @@ const Page = () => {
                     Description: `Budget: ${ethers.utils.formatEther(deal[3])} ETH - Closing Date: ${new Date(deal[10] * 1000).toLocaleDateString()}`,
                     status: "Applied" // Default status
                 }));
-
+                //@ts-ignore
                 setCardData(formattedDeals);
             } catch (error) {
                 console.error("Error fetching deal data:", error);
@@ -55,7 +57,7 @@ const Page = () => {
                 </div>
 
                 <div className="h-screen w-full dark:bg-black-100 bg-white dark:bg-grid-white/[0.03] bg-grid-black-100/[0.2] absolute top-0 left-0 flex items-center justify-center">
-                    <div className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black-100 bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"/>
+                    <div className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black-100 bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]" />
                 </div>
 
                 <div className="flex flex-col justify-center items-center relative -mt-16 z-10">
@@ -69,7 +71,7 @@ const Page = () => {
                 </div>
 
                 <div className='flex flex-wrap justify-around'>
-                    {cardData.map((card, index) => (
+                    {cardData.map((card: any, index) => (
                         <CardContainer key={index} className="inter-var">
                             <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border overflow-hidden">
                                 <CardItem
