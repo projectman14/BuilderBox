@@ -10,21 +10,34 @@ import { ethers } from 'ethers'; // Import ethers
 
 const Page = () => {
     const router = useRouter();
-    const { contractDeal } = useContract();
+    const { contractDeal, contractRequest, account } = useContract();
     const [cardData, setCardData] = useState([]);
-
+    
     useEffect(() => {
-        const fetchDealData = async () => {
+        const fetchRequestData = async () => {
             try {
-                //@ts-ignore
-                const dealCount = await contractDeal.dealCount();
+                // @ts-ignore
+                const interests = await contractRequest.getInterests(account[0]);
+                // @ts-ignore
+                const formattedInterests = interests.map(interest => ({
+                    contractorAddress: interest[0],
+                    dealId: interest[1].toString(),
+                    suggestAmount: ethers.utils.formatUnits(interest[2], 'ether'),
+                    contractCompleteDate: new Date(interest[3].toNumber() * 1000).toLocaleDateString()
+                }));
+                console.log(account);
+                console.log(formattedInterests.length);
+
                 const dealPromises = [];
-                for (let i = 0; i < dealCount; i++) {
+                // const requestPromises = [];
+                for (let i = 0; i < formattedInterests.length; i++) {
                     //@ts-ignore
-                    dealPromises.push(contractDeal.getDealDetails(i));
+                    dealPromises.push(contractDeal.getDealDetails(formattedInterests[i].dealId));
+                    // requestPromises.push(formattedInterests[i]);
                 }
 
                 const deals = await Promise.all(dealPromises);
+                // const requests = await Promise.all(requestPromises);
 
                 const formattedDeals = deals.map(deal => ({
                     projectName: deal[2],
@@ -38,8 +51,8 @@ const Page = () => {
             }
         };
 
-        fetchDealData();
-    }, [contractDeal]);
+        fetchRequestData();
+    }, [contractRequest]);
 
     return (
         <div className="relative overflow-hidden h-[100vh]">
