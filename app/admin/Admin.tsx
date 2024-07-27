@@ -110,7 +110,7 @@ const Admin = () => {
 
     return (
         <div className='flex justify-around flex-wrap bg-black-100'>
-            {contractors.map((card, index) => (
+            {contractors.map((card: any, index) => (
                 <CardContainer key={index} className="inter-var">
                     <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black-100 dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border overflow-hidden">
                         <CardItem
