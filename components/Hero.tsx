@@ -46,45 +46,45 @@ const Hero = () => {
     }
   };
 
-  useEffect(() => {
+  // useEffect(() => {
 
 
-    const finalizeDeal = async () => {
-      try {
-        //@ts-ignore
-        const dealCount = await contractDeal.dealCount();
-        console.log(dealCount.toNumber())
-        const overdue: number[] = [];
+  //   const finalizeDeal = async () => {
+  //     try {
+  //       //@ts-ignore
+  //       const dealCount = await contractDeal.dealCount();
+  //       console.log(dealCount.toNumber())
+  //       const overdue: number[] = [];
 
-        for (let i = 0; i < dealCount; i++) {
-          //@ts-ignore
-          const { dealClosingTime } = await contractDeal.getDealDetails(i);
-          const time = dealClosingTime.toNumber();
-          // console.log(time)
-          // const dealData = await contractDeal.getDealDetails(i);
-          if (time < Math.floor(Date.now() / 1000)) {
-            overdue.push(i);
-          }
+  //       for (let i = 0; i < dealCount; i++) {
+  //         //@ts-ignore
+  //         const { dealClosingTime } = await contractDeal.getDealDetails(i);
+  //         const time = dealClosingTime.toNumber();
+  //         // console.log(time)
+  //         // const dealData = await contractDeal.getDealDetails(i);
+  //         if (time < Math.floor(Date.now() / 1000)) {
+  //           overdue.push(i);
+  //         }
 
-          // console.log('Overdue deals:', dealData);
+  //         // console.log('Overdue deals:', dealData);
 
-          for (let i = 0; i < overdue.length; i++) {
-            //@ts-ignore
-            const tx = await contractDealFinal.doingDeal(i);
-            await tx.wait();
-          }
-        }
+  //         for (let i = 0; i < overdue.length; i++) {
+  //           //@ts-ignore
+  //           const tx = await contractDealFinal.doingDeal(i);
+  //           await tx.wait();
+  //         }
+  //       }
 
-        console.log('Overdue deals:', overdue);
+  //       console.log('Overdue deals:', overdue);
 
 
-      } catch (error) {
-        console.error('Error finalizing deals:', error);
-      }
-    };
+  //     } catch (error) {
+  //       console.error('Error finalizing deals:', error);
+  //     }
+  //   };
 
-    finalizeDeal();
-  }, [contractDeal]);
+  //   finalizeDeal();
+  // }, [contractDeal]);
 
 
   return (
